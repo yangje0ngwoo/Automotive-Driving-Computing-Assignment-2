@@ -8,16 +8,17 @@ class CNNActionValue(nn.Module):
         self.conv1 = nn.Conv2d(state_dim, 16, kernel_size=8, stride=4)  # [N, 4, 84, 84] -> [N, 16, 20, 20]
         self.conv2 = nn.Conv2d(16, 32, kernel_size=4, stride=2)  # [N, 16, 20, 20] -> [N, 32, 9, 9]
         self.conv3 = nn.Conv2d(32, 64, kernel_size=3, stride=1)  # [N, 32, 9, 9] -> [N, 64, 7, 7]
-        self.fc1 = nn.Linear(64 * 7 * 7, 256)
+
+	self.in_features = 64 * 7 * 7  # conv3에 맞춰서 수정
+
+        self.fc1 = nn.Linear(self.in_features, 256)
         self.fc2 = nn.Linear(256, action_dim)
         self.activation = activation
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
         x = F.relu(self.conv2(x))
-        x = F.relu(self.conv3(x))
-        x = x.view(x.size(0), -1)  # 자동으로 크기 계산
+        x = x.view((-1, self.in_features))
         x = self.fc1(x)
         x = self.fc2(x)
         return x
-
